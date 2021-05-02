@@ -603,6 +603,7 @@ set(CGAL_SOURCES
   src/cgalutils-tess.cc
   src/export_nef.cc
   src/import_nef.cc
+  src/export_dump.cc
   src/CGAL_Nef_polyhedron.cc
   src/CGALCache.cc
   src/CSGTreeEvaluator.cc
