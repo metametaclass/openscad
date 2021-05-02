@@ -171,13 +171,16 @@ size_t append_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
     size_t triangle_count = 0;
 	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
 		for(const Geometry::GeometryItem &item : geomlist->getChildren()) {
+			LOG(message_group::None, Location::NONE,"","export GeometryItem %1$s", item.first->verbose_name());
 			triangle_count += append_stl(item.second, output, binary);
 		}
 	}
 	else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+		LOG(message_group::None, Location::NONE,"","export CGAL_Nef_polyhedron %1$d", N->numFacets());
 		triangle_count += append_stl(*N, output, binary);
 	}
 	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+		LOG(message_group::None, Location::NONE,"","export PolySet %1$d", ps->polygons.size());
 		triangle_count += append_stl(*ps, output, binary);
 	}
 	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
@@ -194,6 +197,7 @@ size_t append_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
 void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
     bool binary)
 {
+    LOG(message_group::None, Location::NONE,"","export_stl");
     if (binary) {
       char header[80] = "OpenSCAD Model\n";
       output.write(header, sizeof(header));

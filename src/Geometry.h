@@ -35,7 +35,7 @@ protected:
 };
 
 /**
- * A Base clss for simple visitors to process different Geometry subclasses uniformly
+ * A Base class for simple visitors to process different Geometry subclasses uniformly
  */
 class GeometryVisitor
 {

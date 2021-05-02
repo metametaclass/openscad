@@ -35,6 +35,7 @@
 
 static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 {
+	LOG(message_group::None, Location::NONE,"","createNefPolyhedronFromPolySet");
 	if (ps.isEmpty()) return new CGAL_Nef_polyhedron();
 	assert(ps.getDimension() == 3);
 
@@ -113,6 +114,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 
 static CGAL_Nef_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d &polygon)
 {
+	LOG(message_group::None, Location::NONE,"","createNefPolyhedronFromPolygon2d");
 	shared_ptr<PolySet> ps(polygon.tessellate());
 	return createNefPolyhedronFromPolySet(*ps);
 }
@@ -244,6 +246,7 @@ namespace CGALUtils {
 
 	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const Geometry &geom)
 	{
+		LOG(message_group::None, Location::NONE,"","createNefPolyhedronFromGeometry");
 		if (auto ps = dynamic_cast<const PolySet*>(&geom)) {
 			return createNefPolyhedronFromPolySet(*ps);
 		}

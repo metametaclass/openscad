@@ -1,5 +1,6 @@
 #include "NodeVisitor.h"
 #include "state.h"
+#include "printutils.h"
 
 State NodeVisitor::nullstate(nullptr);
 
@@ -11,6 +12,7 @@ Response NodeVisitor::traverse(const AbstractNode &node, const State &state)
 	Response response = Response::ContinueTraversal;
 	newstate.setPrefix(true);
 	newstate.setParent(state.parent());
+	LOG(message_group::None, Location::NONE, "", "prefix %1$s", node.verbose_name());
 	response = node.accept(newstate, *this);
 
 	// Pruned traversals mean don't traverse children
@@ -27,6 +29,7 @@ Response NodeVisitor::traverse(const AbstractNode &node, const State &state)
 		newstate.setParent(state.parent());
 		newstate.setPrefix(false);
 		newstate.setPostfix(true);
+		LOG(message_group::None, Location::NONE, "", "postfix %1$s", node.verbose_name());
 		response = node.accept(newstate, *this);
 	}
 

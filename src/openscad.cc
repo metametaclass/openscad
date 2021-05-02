@@ -276,6 +276,7 @@ Camera get_camera(const po::variables_map &vm)
 static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 													 FileFormat format, const bool is_stdout, const std::string& filename)
 {
+	LOG(message_group::None, Location::NONE,"","checkAndExport %1$s", filename);
 	if (root_geom->getDimension() != nd) {
 		LOG(message_group::None,Location::NONE,"","Current top level object is not a %1$dD object.",nd);
 		return false;
@@ -461,9 +462,10 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 
 int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<BuiltinContext> &top_ctx, FileFormat curFormat, FileModule *root_module)
 {
+	LOG(message_group::None, Location::NONE,"","do_export %1$s", cmd.output_file);
 	const std::string filename_str = fs::path(cmd.output_file).generic_string();
 
-  unique_ptr<OffscreenView> glview;
+	unique_ptr<OffscreenView> glview;
 	ModuleInstantiation root_inst("group");
 	ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
 	AbstractNode *absolute_root_node = root_module->instantiateWithFileContext(filectx.ctx, &root_inst, nullptr);
@@ -526,7 +528,6 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 	}
 	else {
 #ifdef ENABLE_CGAL
-
 		// start measuring render time
 		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 		GeometryEvaluator geomevaluator(tree);
@@ -534,11 +535,13 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 			// OpenCSG or throwntogether png -> just render a preview
 			glview = prepare_preview(tree, cmd.viewOptions, camera);
 		} else {
+			LOG(message_group::None, Location::NONE,"","evaluate geometry");
 			// Force creation of CGAL objects (for testing)
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			if (root_geom) {
 				if (cmd.viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
 					if (auto geomlist = dynamic_pointer_cast<const GeometryList>(root_geom)) {
+						LOG(message_group::None, Location::NONE,"","flatten GeometryList");
 						auto flatlist = geomlist->flatten();
 						for (auto &child : flatlist) {
 							if (child.second->getDimension() == 3 && !dynamic_pointer_cast<const CGAL_Nef_polyhedron>(child.second)) {
@@ -547,6 +550,7 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 						}
 						root_geom.reset(new GeometryList(flatlist));
 					} else if (!dynamic_pointer_cast<const CGAL_Nef_polyhedron>(root_geom)) {
+						LOG(message_group::None, Location::NONE,"","createNefPolyhedronFromGeometry");
 						root_geom.reset(CGALUtils::createNefPolyhedronFromGeometry(*root_geom));
 					}
 					LOG(message_group::None,Location::NONE,"","Converted to Nef polyhedron");

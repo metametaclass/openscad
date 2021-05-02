@@ -49,6 +49,7 @@ bool canPreview(const FileFormat format) {
 
 void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &output, const ExportInfo& exportInfo)
 {
+	LOG(message_group::None, Location::NONE,"","exportFile %1$s", exportInfo.name2open);
 	switch (exportInfo.format) {
 	case FileFormat::ASCIISTL:
 		export_stl(root_geom, output, false);

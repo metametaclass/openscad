@@ -68,7 +68,7 @@ void RenderStatistic::visit(const GeometryList& geomlist)
 void RenderStatistic::visit(const PolySet& ps)
 {
 	assert(ps.getDimension() == 3);
-	LOG(message_group::None,Location::NONE,"","   Top level object is a 3D object:");
+	LOG(message_group::None,Location::NONE,"","   Top level object is a 3D (PolySet) object:");
 	LOG(message_group::None,Location::NONE,"","   Facets:     %1$6d",
 	ps.numFacets());
 }
@@ -85,7 +85,7 @@ void RenderStatistic::visit(const CGAL_Nef_polyhedron& Nef)
 {
   if (Nef.getDimension() == 3) {
     bool simple = Nef.p3->is_simple();
-    LOG(message_group::None,Location::NONE,"","   Top level object is a 3D object:");
+    LOG(message_group::None,Location::NONE,"","   Top level object is a 3D (CGAL_Nef_polyhedron) object:");
     LOG(message_group::None,Location::NONE,"","   Simple:     %6s",(simple ? "yes" : "no"));
     LOG(message_group::None,Location::NONE,"","   Vertices:   %1$6d",Nef.p3->number_of_vertices());
     LOG(message_group::None,Location::NONE,"","   Halfedges:  %1$6d",Nef.p3->number_of_halfedges());
