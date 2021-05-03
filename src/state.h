@@ -9,7 +9,7 @@ class State
 {
 public:
   State(const class AbstractNode *parent) 
-    : flags(NONE), parentnode(parent), numchildren(0) {
+    : flags(NONE), parentnode(parent), numchildren(0), indent_(0) {
 		this->matrix_ = Transform3d::Identity();
 		this->color_.fill(-1.0f);
 	}
@@ -17,6 +17,8 @@ public:
   
   void setPrefix(bool on) { FLAG(this->flags, PREFIX, on); }
   void setPostfix(bool on) { FLAG(this->flags, POSTFIX, on); }
+	void incIndent() { this->indent_++; }
+	void decIndent() { this->indent_--; }
   void setHighlight(bool on) { FLAG(this->flags, HIGHLIGHT, on); }
   void setBackground(bool on) { FLAG(this->flags, BACKGROUND, on); }
   void setNumChildren(unsigned int numc) { this->numchildren = numc; }
@@ -34,6 +36,7 @@ public:
   const AbstractNode *parent() const { return this->parentnode; }
 	const Transform3d &matrix() const { return this->matrix_; }
 	const Color4f &color() const { return this->color_; }
+	const int indent() const { return this->indent_; }
 
 private:
 	enum StateFlags {
@@ -52,4 +55,5 @@ private:
 	// Transformation matrix and color. FIXME: Generalize such state variables?
 	Transform3d matrix_;
 	Color4f color_;
+    int indent_;
 };

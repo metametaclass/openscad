@@ -17,19 +17,16 @@ void export_dump_inner(const shared_ptr<const Geometry> &geom, std::ostream &out
 			output << "GeometryItem " << item.first->verbose_name() << " " << item.first->toString()
 						 << "\n";
 			export_dump_inner(item.second, output, current_indent+1);
-			// LOG(message_group::None, Location::NONE,"","export GeometryItem %1$s",
 			// item.first->verbose_name()); triangle_count += append_stl(item.second, output);
 		}
 	}
 	else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		output << "CGAL_Nef_polyhedron " << N->numFacets() << "\n";
-		// LOG(message_group::None, Location::NONE,"","export CGAL_Nef_polyhedron %1$d",
 		// N->numFacets()); triangle_count += append_stl(*N, output);
 	}
 	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		output << "PolySet " << ps->polygons.size() << "\n";
-		output << "PolySet " << ps->dump() << "\n";
-		// LOG(message_group::None, Location::NONE,"","export PolySet %1$d", ps->polygons.size());
+		//output << "PolySet " << ps->dump() << "\n";
 		// triangle_count += append_stl(*ps, output);
 	}
 	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
