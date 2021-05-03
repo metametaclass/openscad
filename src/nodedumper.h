@@ -34,7 +34,7 @@ public:
     NodeDumper(NodeCache &cache, const AbstractNode *root_node, const std::string& indent, bool idString) :
             cache(cache), indent(indent), idString(idString), currindent(0), root(root_node) { 
         if (idString) { 
-            groupChecker.traverse(*root);
+            groupChecker.traverse(*root, "groupChecker");
         }
     }
     ~NodeDumper() {}

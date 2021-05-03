@@ -31,7 +31,7 @@ public:
   NodeVisitor() {}
   ~NodeVisitor() {}
   
-	Response traverse(const AbstractNode &node, const class State &state = NodeVisitor::nullstate);
+	Response traverse(const AbstractNode &node, const std::string &comment, const class State &state = NodeVisitor::nullstate);
 
   Response visit(class State &state, const class AbstractNode &node) override = 0;
   Response visit(class State &state, const class AbstractIntersectionNode &node) override {

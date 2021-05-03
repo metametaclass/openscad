@@ -74,6 +74,20 @@ std::string CsgOpNode::name() const
 	return "internal_error";
 }
 
+std::string operatorToString(OpenSCADOperator op)
+{
+	switch (op) {
+	case OpenSCADOperator::UNION:
+		return "union";
+	case OpenSCADOperator::DIFFERENCE:
+		return "difference";
+	case OpenSCADOperator::INTERSECTION:
+		return "intersection";
+	default:
+		return "unknown operator";
+	}
+}
+
 void register_builtin_csgops()
 {
 	Builtins::init("union", new CsgModule(OpenSCADOperator::UNION),

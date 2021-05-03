@@ -12,3 +12,5 @@ public:
 	std::string toString() const override;
 	std::string name() const override;
 };
+
+std::string operatorToString(OpenSCADOperator op);

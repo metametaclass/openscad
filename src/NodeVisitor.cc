@@ -4,8 +4,11 @@
 
 State NodeVisitor::nullstate(nullptr);
 
-Response NodeVisitor::traverse(const AbstractNode &node, const State &state)
+Response NodeVisitor::traverse(const AbstractNode &node, const std::string &comment, const State &state)
 {
+	if(comment != ""){
+		PRINTDB("%s::traverse %s", typeid(this).name() % comment);
+	}
 	State newstate = state;
 	newstate.setNumChildren(node.getChildren().size());
 	
@@ -25,7 +28,7 @@ Response NodeVisitor::traverse(const AbstractNode &node, const State &state)
 		newstate.setParent(&node);
 		newstate.incIndent();
 		for(const auto &chnode : node.getChildren()) {
-			response = this->traverse(*chnode, newstate);
+			response = this->traverse(*chnode, "", newstate);
 			if (response == Response::AbortTraversal) return response; // Abort immediately
 		}
 		newstate.decIndent();
