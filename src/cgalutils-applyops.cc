@@ -142,6 +142,7 @@ namespace CGALUtils {
 
 	CGAL_Nef_polyhedron *applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
 	{
+		PRINTD("applyUnion3D");
 		typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
 		struct QueueItemGreater {
 			// stable sort for priority_queue by facets, then progress mark

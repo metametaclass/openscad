@@ -15,7 +15,7 @@ Response NodeVisitor::traverse(const AbstractNode &node, const State &state)
 
 	std::string indent(state.indent(), '\t');
 	if (OpenSCAD::debug!="") {
-		PRINTDB("%s%s%s", indent % node.verbose_name() % (node.children.size()>0  ? " {": ""));
+		PRINTDB("%s%s%s // %s [%d]", indent % node.verbose_name() % (node.children.size()>0  ? " {": "") % typeid(node).name() % node.index() );
 	}
 	//LOG(message_group::None, Location::NONE, "", "prefix %1$s", node.verbose_name());
 	response = node.accept(newstate, *this);
@@ -40,7 +40,7 @@ Response NodeVisitor::traverse(const AbstractNode &node, const State &state)
 		response = node.accept(newstate, *this);
 		//LOG(message_group::None, Location::NONE, "", "postfix %1$s", node.verbose_name());
 		if (OpenSCAD::debug!="" && node.children.size()>0) {
-			PRINTDB("%s} // %s", indent % node.verbose_name());
+			PRINTDB("%s} // %s %s [%d]", indent % node.verbose_name() % typeid(node).name() % node.index());
 		}
 	}
 

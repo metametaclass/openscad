@@ -127,6 +127,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 */
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCADOperator op)
 {
+	PRINTDB("applyToChildren3D %s %s [%d]", node.verbose_name() % typeid(node).name() % node.index());
 	Geometry::Geometries children = collectChildren3D(node);
 	if (children.size() == 0) return ResultObject();
 
@@ -353,6 +354,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 */
 Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSCADOperator op)
 {
+	PRINTDB("applyToChildren2D %s %s [%d]", node.verbose_name() % typeid(node).name() % node.index());
 	node.progress_report();
 	if (op == OpenSCADOperator::MINKOWSKI) {
 		return applyMinkowski2D(node);
