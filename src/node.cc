@@ -81,6 +81,9 @@ std::string GroupNode::verbose_name() const
 }
 
 std::string GroupNode::toString() const {
+	if(this->_name.empty()){
+		return "group()";
+	}
 	return "group(\""+this->_name+"\")";
 }
 
