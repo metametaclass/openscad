@@ -22,11 +22,12 @@ void export_dump_inner(const shared_ptr<const Geometry> &geom, std::ostream &out
 	}
 	else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		output << "CGAL_Nef_polyhedron " << N->numFacets() << "\n";
+		output << const_cast<CGAL_Nef_polyhedron3&>(*N->p3);
 		// N->numFacets()); triangle_count += append_stl(*N, output);
 	}
 	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
-		output << "PolySet " << ps->polygons.size() << "\n";
-		//output << "PolySet " << ps->dump() << "\n";
+		//output << "PolySet " << ps->polygons.size() << "\n";
+		output << "PolySet " << ps->dump() << "\n";
 		// triangle_count += append_stl(*ps, output);
 	}
 	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
