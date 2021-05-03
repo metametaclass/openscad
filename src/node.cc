@@ -80,6 +80,10 @@ std::string GroupNode::verbose_name() const
   return this->_name;
 }
 
+std::string GroupNode::toString() const {
+	return "group(\""+this->_name+"\")";
+}
+
 std::string ListNode::name() const
 {
 	return "list";

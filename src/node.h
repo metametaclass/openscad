@@ -117,7 +117,8 @@ public:
 	GroupNode(const class ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx, const std::string &name="") : AbstractNode(mi, ctx), _name(name) { }
 	~GroupNode() { }
 	std::string name() const override;
-  std::string verbose_name() const override;
+	std::string toString() const override;
+	std::string verbose_name() const override;
 private:
 	const std::string _name;
 };

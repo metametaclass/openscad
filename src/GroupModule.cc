@@ -30,10 +30,21 @@
 #include "builtin.h"
 #include "evalcontext.h"
 
-AbstractNode *GroupModule::instantiate(const std::shared_ptr<Context>&, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
+AbstractNode *GroupModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new GroupNode(inst, evalctx);
+	std::string name("");
+
+	AssignmentList args{assignment("name")};
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args);
 	inst->scope.apply(evalctx);
+
+	const auto &v = c->lookup_variable("name");
+	if(v.type() == Value::Type::STRING){
+		name = v.toString();
+	}
+
+	auto node = new GroupNode(inst, evalctx, name);
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 

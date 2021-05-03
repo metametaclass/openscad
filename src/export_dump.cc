@@ -28,6 +28,7 @@ void export_dump_inner(const shared_ptr<const Geometry> &geom, std::ostream &out
 	}
 	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		output << "PolySet " << ps->polygons.size() << "\n";
+		output << "PolySet " << ps->dump() << "\n";
 		// LOG(message_group::None, Location::NONE,"","export PolySet %1$d", ps->polygons.size());
 		// triangle_count += append_stl(*ps, output);
 	}
