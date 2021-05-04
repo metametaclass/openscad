@@ -27,6 +27,7 @@ public:
 	Response visit(State &state, const GroupNode &node) override;
 	Response visit(State &state, const RootNode &node) override;
 	Response visit(State &state, const LeafNode &node) override;
+	Response visit(State &state, const ColorNode &node) override;
 	Response visit(State &state, const TransformNode &node) override;
 	Response visit(State &state, const CsgOpNode &node) override;
 	Response visit(State &state, const CgaladvNode &node) override;

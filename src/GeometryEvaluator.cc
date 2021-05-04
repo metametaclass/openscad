@@ -15,6 +15,7 @@
 #include "projectionnode.h"
 #include "csgops.h"
 #include "textnode.h"
+#include "colornode.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
 #include "rendernode.h"
@@ -426,6 +427,7 @@ void GeometryEvaluator::addToParent(const State &state,
 */
 Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 {
+	PRINTDB("GeometryEvaluator::visit AbstractNode %s %s [%d] %s %s", node.verbose_name() % typeid(node).name() % node.index() % (state.isPrefix()? "prefix":"") % (state.isPostfix()? "postfix":"") );
 	if (state.isPrefix()) {
 		if (isSmartCached(node)) return Response::PruneTraversal;
 		state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
@@ -440,6 +442,29 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 		}
 		addToParent(state, node, geom);
 		node.progress_report();
+	}
+	return Response::ContinueTraversal;
+}
+
+Response GeometryEvaluator::visit(State &state, const ColorNode &node)
+{
+	PRINTDB("GeometryEvaluator::visit ColorNode %s %s [%d] %s %s", node.verbose_name() % typeid(node).name() % node.index() % (state.isPrefix()? "prefix":"") % (state.isPostfix()? "postfix":"") );
+	if (state.isPrefix()) {
+		if (!state.color().isValid()) state.setColor(node.color);
+	}
+	if (state.isPostfix()) {
+		//process ColorNode children as ListNode children - pass to parent
+		unsigned int dim = 0;
+		for(const auto &item : this->visitedchildren[node.index()]) {
+			if (!isValidDim(item, dim)) break;
+			const AbstractNode *chnode = item.first;
+			const shared_ptr<const Geometry> &chgeom = item.second;
+			addToParent(state, *chnode, chgeom);
+		}
+		this->visitedchildren.erase(node.index());
+
+		//applyToChildren(state, node, OpenSCADOperator::UNION);
+		//addToParent(state, node);
 	}
 	return Response::ContinueTraversal;
 }
