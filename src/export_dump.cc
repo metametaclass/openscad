@@ -13,9 +13,9 @@ void export_dump_inner(const shared_ptr<const Geometry> &geom, std::ostream &out
 	}
 
 	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+		output << "GeometryList " << geomlist->getChildren().size() << "\n";
 		for (const Geometry::GeometryItem &item : geomlist->getChildren()) {
-			output << "GeometryItem " << item.first->verbose_name() << " " << item.first->toString()
-						 << "\n";
+			output << "GeometryItem " << item.first->verbose_name() << " " << item.first->toString() << " " << typeid(*item.second).name() << "\n";
 			export_dump_inner(item.second, output, current_indent+1);
 			// item.first->verbose_name()); triangle_count += append_stl(item.second, output);
 		}
