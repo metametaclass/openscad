@@ -2,7 +2,7 @@
 
 #ifdef ENABLE_CGAL
 #include "Geometry.h"
-#include "Polyset.h"
+#include "polyset.h"
 #include "Polygon2d.h"
 #include "CGAL_Nef_polyhedron.h"
 
