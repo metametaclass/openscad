@@ -93,18 +93,6 @@ public:
 	};
 };
 
-/*!
-	Used for organizing objects into lists which should not be grouped but merely
-	unpacked by the parent node.
- */
-class ListNode : public AbstractNode
-{
-public:
-	VISITABLE();
-	ListNode(const class ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractNode(mi, ctx) { }
-	~ListNode() { }
-	std::string name() const override;
-};
 
 /*!
   Logically groups objects together. Used as a way of passing
@@ -122,6 +110,20 @@ public:
 private:
 	const std::string _name;
 };
+
+/*!
+	Used for organizing objects into lists which should not be grouped but merely
+	unpacked by the parent node.
+ */
+class ListNode : public GroupNode
+{
+public:
+	VISITABLE();
+	ListNode(const class ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx, const std::string &name="") : GroupNode(mi, ctx, name) { }
+	~ListNode() { }
+	std::string name() const override;
+};
+
 
 /*!
 	Only instantiated once, for the top-level file.

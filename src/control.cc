@@ -221,8 +221,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		if (evalctx->numArgs()<=0) {
 			// no parameters => all children
 			AbstractNode* node;
-			if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
-			else node = new GroupNode(inst, evalctx);
+			if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx, "children");
+			else node = new GroupNode(inst, evalctx, "children");
 
 			for (int n = 0; n < (int)modulectx->numChildren(); ++n) {
 				AbstractNode* childnode = modulectx->getChild(n)->evaluate(modulectx);
@@ -239,8 +239,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 			}
 			else if (value.type() == Value::Type::VECTOR) {
 				AbstractNode* node;
-				if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
-				else node = new GroupNode(inst, evalctx);
+				if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx, "children");
+				else node = new GroupNode(inst, evalctx, "children");
 				for(const auto& val : value.toVector()) {
 					AbstractNode* childnode = getChild(val, modulectx);
 					if (childnode==nullptr) continue; // error
@@ -257,8 +257,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 					return nullptr;
 				}
 				AbstractNode* node;
-				if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
-				else node = new GroupNode(inst, evalctx);
+				if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx, "children");
+				else node = new GroupNode(inst, evalctx, "children");
 				for (double d : range) {
 					AbstractNode* childnode = getChild(static_cast<int>(trunc(d)), modulectx); // with error cases
 					if (childnode==nullptr) continue; // error
@@ -278,7 +278,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		break;
 
 	case Type::ECHO: {
-		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx, "echo");
 		else node = new GroupNode(inst, evalctx);
 		LOG(message_group::Echo,Location::NONE,"",STR(*evalctx));
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
@@ -290,7 +290,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		break;
 
 	case Type::ASSERT: {
-		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx, "assert");
 		else node = new GroupNode(inst, evalctx);
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
 		evaluate_assert(c.ctx, evalctx);
@@ -302,8 +302,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		break;
 
 	case Type::LET: {
-		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
-		else node = new GroupNode(inst, evalctx);
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx, "let");
+		else node = new GroupNode(inst, evalctx, "let");
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
 
 		evalctx->assignTo(c.ctx);
@@ -331,8 +331,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		break;
 
 	case Type::FOR:
-		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
-		else node = new GroupNode(inst, evalctx);
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx, "for");
+		else node = new GroupNode(inst, evalctx, "for");
 		for_eval(*node, *inst, 0, evalctx, evalctx);
 		break;
 
@@ -342,8 +342,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		break;
 
 	case Type::IF: {
-		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
-		else node = new GroupNode(inst, evalctx);
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx, "if");
+		else node = new GroupNode(inst, evalctx, "if");
 		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
 		if (evalctx->numArgs() > 0 && evalctx->getArgValue(0).toBool()) {
 			inst->scope.apply(evalctx);

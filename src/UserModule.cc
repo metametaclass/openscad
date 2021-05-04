@@ -68,7 +68,7 @@ AbstractNode *UserModule::instantiate(const std::shared_ptr<Context>& ctx, const
 
 	AbstractNode *node;
 	if (Feature::ExperimentalLazyUnion.is_enabled()) {
-		node = new ListNode(inst, evalctx); // TODO: pass name: std::string("module ") + this->name
+		node = new ListNode(inst, evalctx, std::string("module ") + this->name); 
 	} else {
 		node = new GroupNode(inst, evalctx, std::string("module ") + this->name);
 	}

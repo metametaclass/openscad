@@ -207,7 +207,7 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 
 /*!
 	Handle list nodes specially: Only list children
-*/
+
 Response NodeDumper::visit(State &state, const ListNode &node)
 {
 	if (state.isPrefix()) {
@@ -229,6 +229,7 @@ Response NodeDumper::visit(State &state, const ListNode &node)
 
 	return Response::ContinueTraversal;
 }
+*/
 
 /*!
 	Handle root nodes specially: Only list children

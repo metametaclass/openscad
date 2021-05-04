@@ -44,7 +44,13 @@ AbstractNode *GroupModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 		name = v.toString();
 	}
 
-	auto node = new GroupNode(inst, evalctx, name);
+	AbstractNode * node;
+	if(this->isList_){
+		node = new ListNode(inst, evalctx, name);
+	} else {
+		node = new GroupNode(inst, evalctx, name);
+	}
+
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
@@ -56,5 +62,9 @@ void register_builtin_group()
 	Builtins::init("group", new GroupModule(),
 				{
 					"group",
+				});
+	Builtins::init("list", new GroupModule(true),
+				{
+					"list",
 				});
 }
