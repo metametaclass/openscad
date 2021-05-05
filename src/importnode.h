@@ -33,5 +33,5 @@ public:
 	double fn, fs, fa;
 	double origin_x, origin_y, scale;
 	double width, height;
-	const class Geometry *createGeometry() const override;
+	const class Geometry *createGeometry(const class GeometryMaterial &material) const override;
 };

@@ -169,7 +169,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 /*!
 	Will return an empty geometry if the import failed, but not nullptr
 */
-const Geometry *ImportNode::createGeometry() const
+const Geometry *ImportNode::createGeometry(const class GeometryMaterial &material) const
 {
 	Geometry *g = nullptr;
 	auto loc = this->modinst->location();
@@ -211,7 +211,10 @@ const Geometry *ImportNode::createGeometry() const
 		g = new PolySet(3);
 	}
 
-	if (g) g->setConvexity(this->convexity);
+	if (g) {
+		g->setConvexity(this->convexity);
+		g->assignMaterial(material);
+	}
 	return g;
 }
 

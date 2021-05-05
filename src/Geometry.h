@@ -9,13 +9,31 @@
 
 class GeometryVisitor;
 
+class GeometryMaterial
+{
+public:
+	GeometryMaterial() : density(0.0) {}
+	GeometryMaterial(const std::string &name, const std::string &materialName, double density) : name(name), materialName(materialName), density(density) {}
+	void setName(const std::string &name) { this->name = name; }
+	const std::string &getName() const { return name; }
+	void setMaterialName(const std::string &materialName) { this->materialName = materialName; }
+	const std::string &getMaterialName() const { return materialName; }
+	void setDensity(double density) { this->density = density; }
+	double getDensity() const { return density; }
+protected:
+	std::string name;
+	std::string materialName;
+	double density;
+};
+
 class Geometry
 {
 public:
 	typedef std::pair<const class AbstractNode *, shared_ptr<const Geometry>> GeometryItem;
 	typedef std::list<GeometryItem> Geometries;
 
-	Geometry() : convexity(1) {}
+	Geometry() : convexity(1), density(0.0) {}
+	Geometry(const GeometryMaterial &material) : convexity(1), name(material.getName()), materialName(material.getMaterialName()), density(material.getDensity()) {}
 	virtual ~Geometry() {}
 
 	virtual size_t memsize() const = 0;
@@ -29,9 +47,21 @@ public:
 	unsigned int getConvexity() const { return convexity; }
 	void setConvexity(int c) { this->convexity = c; }
 
+	void setName(const std::string &name) { this->name = name; }
+	const std::string &getName() const { return name; }
+	void setMaterialName(const std::string &materialName) { this->materialName = materialName; }
+	const std::string &getMaterialName() const { return materialName; }
+	void setDensity(double density) { this->density = density; }
+	double getDensity() const { return density; }
+	void assignMaterial(const Geometry &src);
+	void assignMaterial(const GeometryMaterial &material);
+
 	virtual void accept(class GeometryVisitor &visitor) const = 0;
 protected:
 	int convexity;
+	std::string name;
+	std::string materialName;
+	double density;
 };
 
 /**
@@ -62,6 +92,7 @@ public:
 
 	GeometryList();
 	GeometryList(const Geometry::Geometries &geometries);
+	GeometryList(const Geometry::Geometries &geometries, const GeometryMaterial &material);
 	virtual ~GeometryList();
 
 	size_t memsize() const override;

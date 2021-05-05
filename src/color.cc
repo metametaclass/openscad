@@ -258,7 +258,7 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 {
 	auto node = new ColorNode(inst, evalctx);
 
-	AssignmentList args{assignment("c"), assignment("alpha")};
+	AssignmentList args{assignment("c"), assignment("alpha"), assignment("density"), assignment("weight"), assignment("name")};
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
 	c->setVariables(evalctx, args);
@@ -294,6 +294,28 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 		node->color[3] = alpha.toDouble();
 	}
 
+	const auto &weightValue = c->lookup_variable("weight");
+	if(weightValue.type()==Value::Type::NUMBER){
+		double weight = weightValue.toDouble();
+		node->weight = weight;
+	} else
+	if (weightValue.type()!=Value::Type::UNDEFINED) {
+		LOG(message_group::Warning,inst->location(),ctx->documentPath(),"invalid weight parameter type");
+	}
+	const auto &densityValue = c->lookup_variable("density");
+	if(densityValue.type()==Value::Type::NUMBER){
+		double density = densityValue.toDouble();
+		node->density = density;
+	} else
+	if (densityValue.type()!=Value::Type::UNDEFINED) {
+		LOG(message_group::Warning,inst->location(),ctx->documentPath(),"invalid weight parameter type");
+	}
+
+	const auto &nameValue = c->lookup_variable("name");
+	if(nameValue.type() != Value::Type::UNDEFINED){
+		node->materialName = nameValue.toString();
+	}
+
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
@@ -302,7 +324,10 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 
 std::string ColorNode::toString() const
 {
-	return STR("color([" << this->color[0] << ", " << this->color[1] << ", " << this->color[2] << ", " << this->color[3] << "])");
+	auto name = this->materialName.empty()?"":", name=\"" + this->materialName+ "\"";
+	auto weight = this->weight==0.0?"":STR(", weight=" << this->weight);
+	auto density = this->density==0.0?"":STR(", density=" << this->density);
+	return STR("color([" << this->color[0] << ", " << this->color[1] << ", " << this->color[2] << ", " << this->color[3] << "]" << name << weight << density << ")");
 }
 
 std::string ColorNode::name() const

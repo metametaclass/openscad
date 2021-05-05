@@ -72,7 +72,8 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 				if (!N->isEmpty()) {
 					bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
 					if (err) {
-						LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed.");					}
+						LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed.");
+					}
 				}
 			}
 
@@ -286,8 +287,7 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 	the appropriate cache.
 	This method inserts the geometry into the appropriate cache if it's not already cached.
 */
-void GeometryEvaluator::smartCacheInsert(const AbstractNode &node, 
-																				 const shared_ptr<const Geometry> &geom)
+void GeometryEvaluator::smartCacheInsert(const AbstractNode &node, const shared_ptr<const Geometry> &geom)
 {
 	const std::string &key = this->tree.getIdString(node);
 	PRINTDB("smartCacheInsert %s %s", key % node.verbose_name());
@@ -452,9 +452,14 @@ Response GeometryEvaluator::visit(State &state, const ColorNode &node)
 	PRINTDB("GeometryEvaluator::visit ColorNode %s %s [%d] %s %s", node.verbose_name() % typeid(node).name() % node.index() % (state.isPrefix()? "prefix":"") % (state.isPostfix()? "postfix":"") );
 	if (state.isPrefix()) {
 		if (!state.color().isValid()) state.setColor(node.color);
+		//if node has material data - change material
+		if(node.density!=0 || !node.materialName.empty()){
+			double density = node.density!=0.0 ? node.density : 1.0;
+			state.setMaterial(density, node.materialName);
+		}
 	}
 	if (state.isPostfix()) {
-		//process ColorNode children as ListNode children - pass to parent
+		//process ColorNode children like ListNode children - pass to parent
 		unsigned int dim = 0;
 		for(const auto &item : this->visitedchildren[node.index()]) {
 			if (!isValidDim(item, dim)) break;
@@ -659,7 +664,8 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 	if (state.isPrefix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
-			const Geometry *geometry = node.createGeometry();
+			const GeometryMaterial material("", state.materialName(), state.density());
+			const Geometry *geometry = node.createGeometry(material);
 			assert(geometry);
 			if (const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry)) {
 				if (!polygon->isSanitized()) {
@@ -754,19 +760,25 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 						shared_ptr<Polygon2d> newpoly;
 						if (res.isConst()) newpoly.reset(new Polygon2d(*polygons));
 						else newpoly = dynamic_pointer_cast<Polygon2d>(res.ptr());
-						
+						newpoly->assignMaterial(*geom);
+
 						Transform2d mat2;
 						mat2.matrix() << 
 							node.matrix(0,0), node.matrix(0,1), node.matrix(0,3),
 							node.matrix(1,0), node.matrix(1,1), node.matrix(1,3),
 							node.matrix(3,0), node.matrix(3,1), node.matrix(3,3);
 						newpoly->transform(mat2);
+
 						// A 2D transformation may flip the winding order of a polygon.
 						// If that happens with a sanitized polygon, we need to reverse
 						// the winding order for it to be correct.
 						if (newpoly->isSanitized() && mat2.matrix().determinant() <= 0) {
-							geom.reset(ClipperUtils::sanitize(*newpoly));
+							auto sanitized = ClipperUtils::sanitize(*newpoly);
+							sanitized->assignMaterial(*newpoly);
+							geom.reset(sanitized);
 						}
+						//TODO: assign geometry when no winding order change?
+						//else geom = newpoly;
 					}
 					else if (geom->getDimension() == 3) {
 						shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
@@ -775,6 +787,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 							shared_ptr<PolySet> newps;
 							if (res.isConst()) newps.reset(new PolySet(*ps));
 							else newps = dynamic_pointer_cast<PolySet>(res.ptr());
+							newps->assignMaterial(*geom);
 							newps->transform(node.matrix);
 							geom = newps;
 						}
@@ -786,8 +799,12 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 							if (res.isConst()) newN.reset((CGAL_Nef_polyhedron*)N->copy());
 							else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
 							newN->transform(node.matrix);
+							newN->assignMaterial(*geom);
 							geom = newN;
 						}
+						// else {
+						// 	LOG(message_group::Warning,node.modinst->location(),this->tree.getDocumentPath(),"GeometryEvaluator::visit TransformNode() unknown 3d object type");
+						// }
 					}
 				}
 			}

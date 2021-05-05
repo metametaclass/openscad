@@ -2,11 +2,27 @@
 #include "printutils.h"
 #include <boost/foreach.hpp>
 
+void Geometry::assignMaterial(const Geometry &src){
+	name = src.name;
+	density = src.density;
+	materialName = src.materialName;
+}
+
+void Geometry::assignMaterial(const GeometryMaterial &material){
+	name = material.getName();
+	density = material.getDensity();
+	materialName = material.getMaterialName();
+}
+
 GeometryList::GeometryList()
 {
 }
 
 GeometryList::GeometryList(const Geometry::Geometries &geometries) : children(geometries)
+{
+}
+
+GeometryList::GeometryList(const Geometry::Geometries &geometries, const GeometryMaterial &material) : Geometry(material), children(geometries)
 {
 }
 

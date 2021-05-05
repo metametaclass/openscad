@@ -9,7 +9,7 @@ class State
 {
 public:
   State(const class AbstractNode *parent) 
-    : flags(NONE), parentnode(parent), numchildren(0), indent_(0) {
+    : flags(NONE), parentnode(parent), numchildren(0), indent_(0), density_(1.0), materialName_("") {
 		this->matrix_ = Transform3d::Identity();
 		this->color_.fill(-1.0f);
 	}
@@ -25,6 +25,10 @@ public:
   void setParent(const AbstractNode *parent) { this->parentnode = parent; }
 	void setMatrix(const Transform3d &m) { this->matrix_ = m; }
 	void setColor(const Color4f &c) { this->color_ = c; }
+	void setMaterial(const double &density, const std::string &materialName) {
+		this->density_ = density;
+		this->materialName_ = materialName;
+	}
 	void setPreferNef(bool on) { FLAG(this->flags, PREFERNEF, on); }
 	bool preferNef() const { return this->flags & PREFERNEF; }
 
@@ -37,6 +41,8 @@ public:
 	const Transform3d &matrix() const { return this->matrix_; }
 	const Color4f &color() const { return this->color_; }
 	const int indent() const { return this->indent_; }
+	const std::string &materialName() const { return this->materialName_; }
+	const double density() const { return this->density_; }
 
 private:
 	enum StateFlags {
@@ -55,5 +61,7 @@ private:
 	// Transformation matrix and color. FIXME: Generalize such state variables?
 	Transform3d matrix_;
 	Color4f color_;
+	double density_;
+	std::string materialName_;
     int indent_;
 };

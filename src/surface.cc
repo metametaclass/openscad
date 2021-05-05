@@ -73,7 +73,7 @@ public:
 	bool invert;
 	int convexity;
 
-	const Geometry *createGeometry() const override;
+	const Geometry *createGeometry(const class GeometryMaterial &material) const override;
 private:
 	void convert_image(img_data_t &data, std::vector<uint8_t> &img, unsigned int width, unsigned int height) const;
 	bool is_png(std::vector<uint8_t> &img) const;
@@ -216,11 +216,12 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 	return data;
 }
 
-const Geometry *SurfaceNode::createGeometry() const
+const Geometry *SurfaceNode::createGeometry(const class GeometryMaterial &material) const
 {
 	auto data = read_png_or_dat(filename);
 
 	auto p = new PolySet(3);
+	p->assignMaterial(material);
 	p->setConvexity(convexity);
 
 	int lines = 0;

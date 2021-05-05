@@ -144,7 +144,7 @@ public:
 	VISITABLE();
 	LeafNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractPolyNode(mi, ctx) { };
 	~LeafNode() { };
-	virtual const class Geometry *createGeometry() const = 0;
+	virtual const class Geometry *createGeometry(const class GeometryMaterial &material) const = 0;
 };
 
 std::ostream &operator<<(std::ostream &stream, const AbstractNode &node);

@@ -92,7 +92,7 @@ public:
 	primitive_type_e type;
 	int convexity;
 	Value points, paths, faces;
-	const Geometry *createGeometry() const override;
+	const Geometry *createGeometry(const GeometryMaterial &material) const override;
 };
 
 /**
@@ -345,7 +345,7 @@ static void generate_circle(point2d *circle, double r, int fragments)
 	Creates geometry for this node.
 	May return an empty Geometry creation failed, but will not return nullptr.
 */
-const Geometry *PrimitiveNode::createGeometry() const
+const Geometry *PrimitiveNode::createGeometry(const GeometryMaterial &material) const
 {
 	Geometry *g = nullptr;
 
@@ -641,7 +641,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			}
 		}
 	}
-
+	g->assignMaterial(material);
 	return g;
 }
 
