@@ -664,7 +664,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 	if (state.isPrefix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
-			const GeometryMaterial material("", state.materialName(), state.density());
+			const GeometryMaterial material("", state.materialName(), state.density(), state.color());
 			const Geometry *geometry = node.createGeometry(material);
 			assert(geometry);
 			if (const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry)) {

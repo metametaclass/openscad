@@ -58,3 +58,9 @@ public:
 
 	bool isValid() const { return this->minCoeff() >= 0.0f; }
 };
+
+static std::ostream& operator << (std::ostream& os, const Color4f& c)
+{
+	os << "[" << c[0] << "," << c[1] << "," << c[2] << "," << c[3] << "]";
+	return os;
+}

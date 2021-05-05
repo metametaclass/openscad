@@ -6,12 +6,14 @@ void Geometry::assignMaterial(const Geometry &src){
 	name = src.name;
 	density = src.density;
 	materialName = src.materialName;
+	color = src.getColor();
 }
 
 void Geometry::assignMaterial(const GeometryMaterial &material){
 	name = material.getName();
 	density = material.getDensity();
 	materialName = material.getMaterialName();
+	color = material.getColor();
 }
 
 GeometryList::GeometryList()

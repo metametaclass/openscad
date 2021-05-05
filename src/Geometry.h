@@ -12,18 +12,24 @@ class GeometryVisitor;
 class GeometryMaterial
 {
 public:
-	GeometryMaterial() : density(0.0) {}
-	GeometryMaterial(const std::string &name, const std::string &materialName, double density) : name(name), materialName(materialName), density(density) {}
+	GeometryMaterial() : density(0.0) {
+		this->color.fill(-1.0f);
+	}
+	GeometryMaterial(const std::string &name, const std::string &materialName, double density, const Color4f &color) : name(name), materialName(materialName), density(density), color(color) {
+	}
 	void setName(const std::string &name) { this->name = name; }
 	const std::string &getName() const { return name; }
 	void setMaterialName(const std::string &materialName) { this->materialName = materialName; }
 	const std::string &getMaterialName() const { return materialName; }
 	void setDensity(double density) { this->density = density; }
 	double getDensity() const { return density; }
+	const Color4f &getColor() const { return color; }
+	void setColor(const Color4f &c) { this->color = c; }
 protected:
 	std::string name;
 	std::string materialName;
 	double density;
+	Color4f color;
 };
 
 class Geometry
@@ -32,8 +38,11 @@ public:
 	typedef std::pair<const class AbstractNode *, shared_ptr<const Geometry>> GeometryItem;
 	typedef std::list<GeometryItem> Geometries;
 
-	Geometry() : convexity(1), density(0.0) {}
-	Geometry(const GeometryMaterial &material) : convexity(1), name(material.getName()), materialName(material.getMaterialName()), density(material.getDensity()) {}
+	Geometry() : convexity(1), density(0.0) {
+		this->color.fill(-1.0f);
+	}
+	Geometry(const GeometryMaterial &material) : convexity(1), name(material.getName()), materialName(material.getMaterialName()), density(material.getDensity()), color(material.getColor()) {
+	}
 	virtual ~Geometry() {}
 
 	virtual size_t memsize() const = 0;
@@ -53,6 +62,7 @@ public:
 	const std::string &getMaterialName() const { return materialName; }
 	void setDensity(double density) { this->density = density; }
 	double getDensity() const { return density; }
+	const Color4f &getColor() const { return color; }
 	void assignMaterial(const Geometry &src);
 	void assignMaterial(const GeometryMaterial &material);
 
@@ -62,6 +72,7 @@ protected:
 	std::string name;
 	std::string materialName;
 	double density;
+	Color4f color;
 };
 
 /**
