@@ -290,6 +290,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 																				 const shared_ptr<const Geometry> &geom)
 {
 	const std::string &key = this->tree.getIdString(node);
+	PRINTDB("smartCacheInsert %s %s", key % node.verbose_name());
 
 	shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
 	if (N) {
@@ -474,26 +475,41 @@ Response GeometryEvaluator::visit(State &state, const ColorNode &node)
 */
 Response GeometryEvaluator::visit(State &state, const ListNode &node)
 {
-	if (state.parent()) {
-		if (state.isPrefix() && node.modinst->isBackground()) {
-			if (node.modinst->isBackground()) state.isBackground();
+	// if (state.parent()) {
+	// 	if (state.isPrefix() && node.modinst->isBackground()) {
+	// 		if (node.modinst->isBackground()) state.isBackground();
+	// 		return Response::PruneTraversal;
+	// 	}
+	// 	if (state.isPostfix()) {
+	// 			unsigned int dim = 0;
+	// 			for(const auto &item : this->visitedchildren[node.index()]) {
+	// 				if (!isValidDim(item, dim)) break;
+	// 				const AbstractNode *chnode = item.first;
+	// 				const shared_ptr<const Geometry> &chgeom = item.second;
+	// 				addToParent(state, *chnode, chgeom);
+	// 			}
+	// 			this->visitedchildren.erase(node.index());
+	// 	}
+	// 	return Response::ContinueTraversal;
+	// } else {
+	// 	// Handle when a ListNode is given root modifier
+	// 	return lazyEvaluateRootNode(state, node);
+	// }
+
+	if (state.isPrefix()) {
+		if (node.modinst->isBackground()) {
+			state.isBackground();
 			return Response::PruneTraversal;
 		}
-		if (state.isPostfix()) {
-				unsigned int dim = 0;
-				for(const auto &item : this->visitedchildren[node.index()]) {
-					if (!isValidDim(item, dim)) break;
-					const AbstractNode *chnode = item.first;
-					const shared_ptr<const Geometry> &chgeom = item.second;
-					addToParent(state, *chnode, chgeom);
-				}
-				this->visitedchildren.erase(node.index());
-		}
-		return Response::ContinueTraversal;
-	} else {
-		// Handle when a ListNode is given root modifier
-		return lazyEvaluateRootNode(state, node);
+ 		if (isSmartCached(node)) {
+			 return Response::PruneTraversal;
+		 }
 	}
+	if (state.isPostfix()) {
+		auto geom = lazyEvaluateListNode(node);
+		addToParent(state, node, geom);
+	}
+	return Response::ContinueTraversal;
 }
 
 /*!
@@ -514,29 +530,37 @@ Response GeometryEvaluator::lazyEvaluateRootNode(State &state, const AbstractNod
 		 }
 	}
 	if (state.isPostfix()) {
-		shared_ptr<const class Geometry> geom;
-
-		unsigned int dim = 0;
-		GeometryList::Geometries geometries;
-		for(const auto &item : this->visitedchildren[node.index()]) {
-			if (!isValidDim(item, dim)) break;
-			const AbstractNode *chnode = item.first;
-			const shared_ptr<const Geometry> &chgeom = item.second;
-			if (chnode->modinst->isBackground()) continue;
-			// NB! We insert into the cache here to ensure that all children of
-			// a node is a valid object. If we inserted as we created them, the 
-			// cache could have been modified before we reach this point due to a large
-			// sibling object. 
-			smartCacheInsert(*chnode, chgeom);
-			// Only use valid geometries
-			if (chgeom && !chgeom->isEmpty()) geometries.push_back(item);
-		}
-		if (geometries.size() == 1) geom = geometries.front().second;
-		else if (geometries.size() > 1) geom.reset(new GeometryList(geometries));
-
+		auto geom = lazyEvaluateListNode(node);
 		this->root = geom;
 	}
 	return Response::ContinueTraversal;
+}
+
+shared_ptr<const Geometry> GeometryEvaluator::lazyEvaluateListNode(const AbstractNode& node)
+{
+	shared_ptr<const class Geometry> geom;
+
+	unsigned int dim = 0;
+	GeometryList::Geometries geometries;
+	for(const auto &item : this->visitedchildren[node.index()]) {
+		if (!isValidDim(item, dim)) break;
+		const AbstractNode *chnode = item.first;
+		const shared_ptr<const Geometry> &chgeom = item.second;
+		if (chnode->modinst->isBackground()) continue;
+		// NB! We insert into the cache here to ensure that all children of
+		// a node is a valid object. If we inserted as we created them, the 
+		// cache could have been modified before we reach this point due to a large
+		// sibling object. 
+		smartCacheInsert(*chnode, chgeom);
+		// Only use valid geometries
+		if (chgeom && !chgeom->isEmpty()) geometries.push_back(item);
+	}
+	if (geometries.size() == 1) geom = geometries.front().second;
+	else if (geometries.size() > 1) geom.reset(new GeometryList(geometries));
+
+	smartCacheInsert(node, geom);
+
+	return geom;
 }
 
 /*!
