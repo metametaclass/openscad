@@ -604,6 +604,7 @@ set(CGAL_SOURCES
   src/export_nef.cc
   src/import_nef.cc
   src/export_dump.cc
+  src/export_gltf.cc
   src/CGAL_Nef_polyhedron.cc
   src/CGALCache.cc
   src/CSGTreeEvaluator.cc

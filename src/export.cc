@@ -84,6 +84,12 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 	case FileFormat::DUMP:
 		export_dump(root_geom, output);
 		break;
+	case FileFormat::GLTF:
+		export_gltf(root_geom, output, false);
+		break;
+	case FileFormat::GLB:
+		export_gltf(root_geom, output, true);
+		break;
 	default:
 		assert(false && "Unknown file format");
 	}

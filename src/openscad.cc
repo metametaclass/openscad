@@ -574,7 +574,9 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
             curFormat == FileFormat::_3MF ||
             curFormat == FileFormat::NEFDBG ||
             curFormat == FileFormat::NEF3 ||
-            curFormat == FileFormat::DUMP)
+            curFormat == FileFormat::DUMP ||
+            curFormat == FileFormat::GLB ||
+			curFormat == FileFormat::GLTF)
         {
             if(!checkAndExport(root_geom, 3, curFormat, cmd.is_stdout, filename_str)) {
                 return 1;
