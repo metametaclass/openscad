@@ -38,7 +38,7 @@ public:
 	typedef std::pair<const class AbstractNode *, shared_ptr<const Geometry>> GeometryItem;
 	typedef std::list<GeometryItem> Geometries;
 
-	Geometry() : convexity(1), density(0.0) {
+	Geometry(const std::string &name = "") : convexity(1), name(name), density(0.0) {
 		this->color.fill(-1.0f);
 	}
 	Geometry(const GeometryMaterial &material) : convexity(1), name(material.getName()), materialName(material.getMaterialName()), density(material.getDensity()), color(material.getColor()) {
@@ -104,6 +104,7 @@ public:
 	GeometryList();
 	GeometryList(const Geometry::Geometries &geometries);
 	GeometryList(const Geometry::Geometries &geometries, const GeometryMaterial &material);
+	GeometryList(const Geometry::Geometries &geometries, const std::string &name);
 	virtual ~GeometryList();
 
 	size_t memsize() const override;

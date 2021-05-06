@@ -28,6 +28,11 @@ GeometryList::GeometryList(const Geometry::Geometries &geometries, const Geometr
 {
 }
 
+GeometryList::GeometryList(const Geometry::Geometries &geometries, const std::string &name) : Geometry(name), children(geometries)
+{
+
+}
+
 GeometryList::~GeometryList()
 {
 }

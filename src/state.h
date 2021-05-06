@@ -9,7 +9,7 @@ class State
 {
 public:
   State(const class AbstractNode *parent) 
-    : flags(NONE), parentnode(parent), numchildren(0), indent_(0), density_(1.0), materialName_("") {
+    : flags(NONE), parentnode(parent), numchildren(0), indent_(0), density_(1.0), materialName_(""), partName_("") {
 		this->matrix_ = Transform3d::Identity();
 		this->color_.fill(-1.0f);
 	}
@@ -31,6 +31,10 @@ public:
 	}
 	void setPreferNef(bool on) { FLAG(this->flags, PREFERNEF, on); }
 	bool preferNef() const { return this->flags & PREFERNEF; }
+	void setPartName(const std::string &partName) {
+		this -> partName_ = partName;
+	}
+
 
   bool isPrefix() const { return this->flags & PREFIX; }
   bool isPostfix() const { return this->flags & POSTFIX; }
@@ -41,6 +45,7 @@ public:
 	const Transform3d &matrix() const { return this->matrix_; }
 	const Color4f &color() const { return this->color_; }
 	const int indent() const { return this->indent_; }
+	const std::string &partName() const { return this->partName_; }
 	const std::string &materialName() const { return this->materialName_; }
 	const double density() const { return this->density_; }
 
@@ -61,7 +66,9 @@ private:
 	// Transformation matrix and color. FIXME: Generalize such state variables?
 	Transform3d matrix_;
 	Color4f color_;
-	double density_;
+	std::string partName_;
 	std::string materialName_;
+	double density_;
+
     int indent_;
 };

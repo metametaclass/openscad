@@ -508,7 +508,11 @@ Response GeometryEvaluator::visit(State &state, const ListNode &node)
 		}
  		if (isSmartCached(node)) {
 			 return Response::PruneTraversal;
-		 }
+		}
+
+		if (!node.verbose_name().empty()) {
+			state.setPartName(node.verbose_name());
+		}
 	}
 	if (state.isPostfix()) {
 		auto geom = lazyEvaluateListNode(node);
@@ -560,8 +564,9 @@ shared_ptr<const Geometry> GeometryEvaluator::lazyEvaluateListNode(const Abstrac
 		// Only use valid geometries
 		if (chgeom && !chgeom->isEmpty()) geometries.push_back(item);
 	}
+
 	if (geometries.size() == 1) geom = geometries.front().second;
-	else if (geometries.size() > 1) geom.reset(new GeometryList(geometries));
+	else if (geometries.size() > 1) geom.reset(new GeometryList(geometries, node.verbose_name()));
 
 	smartCacheInsert(node, geom);
 
@@ -664,7 +669,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 	if (state.isPrefix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
-			const GeometryMaterial material("", state.materialName(), state.density(), state.color());
+			const GeometryMaterial material(state.partName(), state.materialName(), state.density(), state.color());
 			const Geometry *geometry = node.createGeometry(material);
 			assert(geometry);
 			if (const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry)) {
