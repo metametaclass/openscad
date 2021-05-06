@@ -42,7 +42,7 @@ GLTFExporter::GLTFExporter()
 	this->scene = &m.scenes[0];
 
 	uint16_t test = 0x0001;
-    little_endian_ = *reinterpret_cast<char *>(&test) == 1;
+	little_endian_ = *reinterpret_cast<char *>(&test) == 1;
 }
 
 void GLTFExporter::write_buffer(tinygltf::Buffer &buffer, const Vector3f &v)
