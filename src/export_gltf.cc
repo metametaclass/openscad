@@ -38,6 +38,7 @@ GLTFExporter::GLTFExporter()
 {
 	tinygltf::Scene scene;
 	m.scenes.push_back(scene);
+	m.defaultScene = 0;
 	this->scene = &m.scenes[0];
 
 	uint16_t test = 0x0001;
@@ -115,10 +116,19 @@ int GLTFExporter::find_or_create_material(const std::string &materialName, const
 		idx = m.materials.size();
 		tinygltf::Material mat;
 		mat.name = materialName;
-		mat.pbrMetallicRoughness.baseColorFactor[0] = color[0];
-		mat.pbrMetallicRoughness.baseColorFactor[1] = color[1];
-		mat.pbrMetallicRoughness.baseColorFactor[2] = color[2];
-		mat.pbrMetallicRoughness.baseColorFactor[3] = color[3];
+		if(color.isValid()){
+			mat.pbrMetallicRoughness.baseColorFactor[0] = color[0];
+			mat.pbrMetallicRoughness.baseColorFactor[1] = color[1];
+			mat.pbrMetallicRoughness.baseColorFactor[2] = color[2];
+			mat.pbrMetallicRoughness.baseColorFactor[3] = color[3];
+		} else {
+			//default dark gray color
+			mat.pbrMetallicRoughness.baseColorFactor[0] = 0.125;
+			mat.pbrMetallicRoughness.baseColorFactor[1] = 0.125;
+			mat.pbrMetallicRoughness.baseColorFactor[2] = 0.125;
+			mat.pbrMetallicRoughness.baseColorFactor[3] = 1.0;
+		}
+
 		mat.pbrMetallicRoughness.metallicFactor = 0.5;
 		mat.pbrMetallicRoughness.roughnessFactor = 0.5;
 		m.materials.push_back(mat);
@@ -289,7 +299,7 @@ int IndexedVertexBuffer::write_indices(GLTFExporter &exporter)
 	accessor.bufferView = buffer_view_idx;
 	accessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
 	accessor.type = TINYGLTF_TYPE_SCALAR;
-	accessor.count = vertices.size();
+	accessor.count = indices.size();
 	accessor.minValues.push_back(min);
 	accessor.maxValues.push_back(max);
 
