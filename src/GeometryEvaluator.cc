@@ -670,6 +670,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 			if (const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry)) {
 				if (!polygon->isSanitized()) {
 					Polygon2d *p = ClipperUtils::sanitize(*polygon);
+					p->assignMaterial(*polygon);
 					delete geometry;
 					geometry = p;
 				}
