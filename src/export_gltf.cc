@@ -172,6 +172,7 @@ void GLTFExporter::save(std::ostream &output, bool write_binary)
 	gltf.WriteGltfSceneToStream(&this->m, output, true, write_binary);
 }
 
+//TODO: use Reindexer.h
 
 class IndexedVertexBuffer
 {
