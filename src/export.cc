@@ -90,6 +90,9 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 	case FileFormat::GLB:
 		export_gltf(root_geom, output, true);
 		break;
+	case FileFormat::PHY:
+		export_physics(root_geom, output);
+		break;
 	default:
 		assert(false && "Unknown file format");
 	}

@@ -30,7 +30,8 @@ enum class FileFormat {
     PDF,
 	DUMP,
 	GLTF,
-	GLB
+	GLB,
+	PHY
 };
 
 struct ExportInfo {
@@ -57,6 +58,7 @@ void export_nefdbg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_dump(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_gltf(const shared_ptr<const Geometry> &geom, std::ostream &output, bool binary);
+void export_physics(const shared_ptr<const Geometry> &geom, std::ostream &output);
 
 // void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
 
@@ -84,6 +86,7 @@ struct ExportFileFormatOptions {
 		{"dump", FileFormat::DUMP},
 		{"gltf", FileFormat::GLTF},
 		{"glb", FileFormat::GLB},
+		{"phy", FileFormat::PHY},
 	};
 };
 
