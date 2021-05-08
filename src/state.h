@@ -9,7 +9,7 @@ class State
 {
 public:
   State(const class AbstractNode *parent) 
-    : flags(NONE), parentnode(parent), numchildren(0), indent_(0), density_(1.0), materialName_(""), partName_("") {
+    : flags(NONE), parentnode(parent), numchildren(0), indent_(0), partName_(""), partWeight_(0.0), materialName_(""), density_(1.0) {
 		this->matrix_ = Transform3d::Identity();
 		this->color_.fill(-1.0f);
 	}
@@ -31,8 +31,13 @@ public:
 	}
 	void setPreferNef(bool on) { FLAG(this->flags, PREFERNEF, on); }
 	bool preferNef() const { return this->flags & PREFERNEF; }
+
 	void setPartName(const std::string &partName) {
 		this -> partName_ = partName;
+	}
+
+	void setPartWeight(const double partWeight) {
+		this -> partWeight_ = partWeight;
 	}
 
 
@@ -46,6 +51,7 @@ public:
 	const Color4f &color() const { return this->color_; }
 	const int indent() const { return this->indent_; }
 	const std::string &partName() const { return this->partName_; }
+	const double partWeight() const { return this->partWeight_;}
 	const std::string &materialName() const { return this->materialName_; }
 	const double density() const { return this->density_; }
 
@@ -67,6 +73,7 @@ private:
 	Transform3d matrix_;
 	Color4f color_;
 	std::string partName_;
+	double partWeight_;
 	std::string materialName_;
 	double density_;
 

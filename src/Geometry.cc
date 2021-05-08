@@ -4,13 +4,15 @@
 
 void Geometry::assignMaterial(const Geometry &src){
 	name = src.name;
+	weight = src.weight;
 	density = src.density;
 	materialName = src.materialName;
 	color = src.getColor();
 }
 
 void Geometry::assignMaterial(const GeometryMaterial &material){
-	name = material.getName();
+	name = material.getPartName();
+	weight = material.getPartWeight();
 	density = material.getDensity();
 	materialName = material.getMaterialName();
 	color = material.getColor();
@@ -28,7 +30,7 @@ GeometryList::GeometryList(const Geometry::Geometries &geometries, const Geometr
 {
 }
 
-GeometryList::GeometryList(const Geometry::Geometries &geometries, const std::string &name) : Geometry(name), children(geometries)
+GeometryList::GeometryList(const Geometry::Geometries &geometries, const std::string &name, const double weight) : Geometry(name, weight), children(geometries)
 {
 
 }

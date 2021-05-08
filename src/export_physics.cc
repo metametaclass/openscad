@@ -38,16 +38,15 @@ std::ostream &operator<<(std::ostream &stream, const CalculationState &s) {
 void CalculationState::calcWeight(const Geometry &geom)
 {
 	auto density = geom.getDensity();
-	//auto weight = geom->getWeight();
-	//auto weight = 0;
+	auto weight = geom.getWeight();
 	auto &name = geom.getName();
-	if(weight>0.0){
-		addWeight(weight);
+	if (weight>0.0) {
+		this->weight = weight;
 	} else {
-		if(density<= 0.0){
+		if (density<= 0.0) {
 			LOG(message_group::Export_Warning, Location::NONE, "", "no weight and density for part %1$s", name);
 		} else {
-			weight = volume * density / 1000.0; //size: mm, density g/cm3
+			this->weight = volume * density / 1000.0; //size: mm, density g/cm3
 		}
 	}
 }

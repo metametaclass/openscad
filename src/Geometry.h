@@ -15,20 +15,33 @@ public:
 	GeometryMaterial() : density(0.0) {
 		this->color.fill(-1.0f);
 	}
-	GeometryMaterial(const std::string &name, const std::string &materialName, double density, const Color4f &color) : name(name), materialName(materialName), density(density), color(color) {
+	GeometryMaterial(const std::string &partName, const double partWeight, const std::string &materialName, double density, const Color4f &color) : partName(partName), partWeight(partWeight), materialName(materialName), density(density), color(color) {
 	}
-	void setName(const std::string &name) { this->name = name; }
-	const std::string &getName() const { return name; }
+
+	//part name and weight don`t belong to material per se, but our `GeometryMaterial` really just geometry creation context
+	void setPartName(const std::string &partName) { this->partName = partName; }
+	const std::string &getPartName() const { return partName; }
+
+	void setPartWeight(const double partWeight) { this->partWeight = partWeight; }
+	const double getPartWeight() const { return partWeight; }
+
 	void setMaterialName(const std::string &materialName) { this->materialName = materialName; }
 	const std::string &getMaterialName() const { return materialName; }
+
 	void setDensity(double density) { this->density = density; }
 	double getDensity() const { return density; }
+
 	const Color4f &getColor() const { return color; }
 	void setColor(const Color4f &c) { this->color = c; }
 protected:
-	std::string name;
+	//part parameterts
+	std::string partName;
+	double partWeight;
+
+	//material parameters
 	std::string materialName;
 	double density;
+
 	Color4f color;
 };
 
@@ -38,10 +51,10 @@ public:
 	typedef std::pair<const class AbstractNode *, shared_ptr<const Geometry>> GeometryItem;
 	typedef std::list<GeometryItem> Geometries;
 
-	Geometry(const std::string &name = "") : convexity(1), name(name), density(0.0) {
+	Geometry(const std::string &name = "", double weight=0.0) : convexity(1), name(name), weight(weight), density(0.0) {
 		this->color.fill(-1.0f);
 	}
-	Geometry(const GeometryMaterial &material) : convexity(1), name(material.getName()), materialName(material.getMaterialName()), density(material.getDensity()), color(material.getColor()) {
+	Geometry(const GeometryMaterial &material) : convexity(1), name(material.getPartName()), weight(material.getPartWeight()), materialName(material.getMaterialName()), density(material.getDensity()), color(material.getColor()) {
 	}
 	virtual ~Geometry() {}
 
@@ -58,10 +71,16 @@ public:
 
 	void setName(const std::string &name) { this->name = name; }
 	const std::string &getName() const { return name; }
+
+	void setWeight(const double weight) { this->weight = weight; }
+	const double getWeight() const { return weight; }
+
 	void setMaterialName(const std::string &materialName) { this->materialName = materialName; }
 	const std::string &getMaterialName() const { return materialName; }
+
 	void setDensity(double density) { this->density = density; }
 	double getDensity() const { return density; }
+
 	const Color4f &getColor() const { return color; }
 	void assignMaterial(const Geometry &src);
 	void assignMaterial(const GeometryMaterial &material);
@@ -69,7 +88,10 @@ public:
 	virtual void accept(class GeometryVisitor &visitor) const = 0;
 protected:
 	int convexity;
+
 	std::string name;
+	double weight;
+
 	std::string materialName;
 	double density;
 	Color4f color;
@@ -104,7 +126,7 @@ public:
 	GeometryList();
 	GeometryList(const Geometry::Geometries &geometries);
 	GeometryList(const Geometry::Geometries &geometries, const GeometryMaterial &material);
-	GeometryList(const Geometry::Geometries &geometries, const std::string &name);
+	GeometryList(const Geometry::Geometries &geometries, const std::string &name, const double weight);
 	virtual ~GeometryList();
 
 	size_t memsize() const override;

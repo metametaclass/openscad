@@ -453,9 +453,14 @@ Response GeometryEvaluator::visit(State &state, const ColorNode &node)
 	if (state.isPrefix()) {
 		if (!state.color().isValid()) state.setColor(node.color);
 		//if node has material data - change material
-		if(node.density!=0 || !node.materialName.empty()){
-			double density = node.density!=0.0 ? node.density : 1.0;
+		if (node.density!=0.0 || !node.materialName.empty()) {
+			double density = node.density>=0.0 ? node.density : 0.0;
 			state.setMaterial(density, node.materialName);
+		}
+
+		//copy weight to state, to use in LeafNode
+		if (node.weight!=0.0) {
+			state.setPartWeight(node.weight);
 		}
 	}
 	if (state.isPostfix()) {
@@ -566,7 +571,7 @@ shared_ptr<const Geometry> GeometryEvaluator::lazyEvaluateListNode(const Abstrac
 	}
 
 	if (geometries.size() == 1) geom = geometries.front().second;
-	else if (geometries.size() > 1) geom.reset(new GeometryList(geometries, node.verbose_name()));
+	else if (geometries.size() > 1) geom.reset(new GeometryList(geometries, node.verbose_name(), 0.0));
 
 	smartCacheInsert(node, geom);
 
@@ -669,7 +674,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 	if (state.isPrefix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
-			const GeometryMaterial material(state.partName(), state.materialName(), state.density(), state.color());
+			const GeometryMaterial material(state.partName(), state.partWeight(), state.materialName(), state.density(), state.color());
 			const Geometry *geometry = node.createGeometry(material);
 			assert(geometry);
 			if (const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry)) {
