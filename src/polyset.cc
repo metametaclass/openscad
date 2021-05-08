@@ -76,7 +76,7 @@ std::string PolySet::dump() const
 	}
 	out << "\n outlines data:";
 	out << polygon.dump();
-	out << "\nPolySet end";
+	out << "\nPolySet end\n";
 	return out.str();
 }
 
