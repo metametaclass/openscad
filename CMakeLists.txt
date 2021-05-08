@@ -98,6 +98,10 @@ file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
 
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 
+# need debug version of glibcxx
+# add_compile_options("$<$<CONFIG:DEBUG>:-D_GLIBCXX_DEBUG=1>")
+
+
 add_definitions(-D_REENTRANT -DUNICODE -D_UNICODE)
 
 # Stack size 8MB; github issue 116
