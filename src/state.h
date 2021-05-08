@@ -9,7 +9,7 @@ class State
 {
 public:
   State(const class AbstractNode *parent) 
-    : flags(NONE), parentnode(parent), numchildren(0), indent_(0), partName_(""), partWeight_(0.0), materialName_(""), density_(1.0) {
+    : flags(NONE), parentnode(parent), numchildren(0), indent_(0), partName_(""), partWeight_(0.0), materialName_(""), density_(0.0) {
 		this->matrix_ = Transform3d::Identity();
 		this->color_.fill(-1.0f);
 	}
