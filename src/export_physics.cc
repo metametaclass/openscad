@@ -9,6 +9,9 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
 
+//check divide by zero
+const double MASS_EPSILON_GRAM = 1e-3;
+
 //class to store and accumulate volume and weight of model parts
 class CalculationState
 {
@@ -20,6 +23,7 @@ public:
 	void addVolume(double volume) { this->volume += volume; }
 	void addWeight(double volume) { this->weight += weight; }
 	void calcWeight(const Geometry &geom);
+	void calcRelativeMomentOfInertiaTensor(Matrix3d &result) const;
 	CalculationState &operator+=(const CalculationState &other);
 	friend std::ostream& operator<<(std::ostream& os, const CalculationState& s);
 private:
@@ -33,20 +37,62 @@ private:
 	friend class PolyhedralFeaturesCalc;
 };
 
-
-CalculationState &CalculationState::operator+=(const CalculationState &other){
+//sum two parts features (mass, volume, center of mass, moment of inertia)
+CalculationState &CalculationState::operator+=(const CalculationState &other)
+{
 	this->volume += other.volume;
 	this->weight += other.weight;
+	double total_mass = this->mass + other.mass;
+	if (abs(total_mass) > MASS_EPSILON_GRAM) {
+		this->center_of_mass = (this->mass * this->center_of_mass + other.mass * other.center_of_mass)/total_mass;
+	} else {
+		LOG(message_group::Export_Warning, Location::NONE, "", "too low mass, cannot calculate center of mass");
+		if(this->mass < other.mass) {
+			this->center_of_mass = other.center_of_mass;
+		}
+	}
+
+	this->mass = total_mass;
+	this->moment_of_inertia_tensor += other.moment_of_inertia_tensor;
 }
 
-std::ostream &operator<<(std::ostream &stream, const CalculationState &s) {
+//calculaute moment of inertia tensor relative to center of mass
+void CalculationState::calcRelativeMomentOfInertiaTensor(Matrix3d &result) const
+{
+	Matrix3d shift;
+	double cmx = this->center_of_mass[0];
+	double cmy = this->center_of_mass[1];
+	double cmz = this->center_of_mass[2];
+	double xx = mass*(cmy*cmy + cmz*cmz);
+	double yy = mass*(cmz*cmz + cmx*cmx);
+	double zz = mass*(cmx*cmx + cmy*cmy);
+	double xy = - mass*cmx*cmy;
+	double yz = - mass*cmy*cmz;
+	double xz = - mass*cmz*cmx;
+
+	shift <<
+		xx, xy, xz,
+		xy, yy, yz,
+		xz, yz, zz;
+	result = this->moment_of_inertia_tensor - shift;
+}
+
+//print parts features to stream
+std::ostream &operator<<(std::ostream &stream, const CalculationState &s)
+{
 	stream << "\tvolume:" << s.volume << " weight:" << s.weight << "\n";
 	stream << "\tmass:" << s.mass << "\n";
 	stream << "\tcenter_of_mass:" << "[" << s.center_of_mass[0] << "," << s.center_of_mass[1] << ","<< s.center_of_mass[2] << "]" << "\n";
-	stream << "\tmoment_of_inertia_tensor:" << s.moment_of_inertia_tensor << "\n";
+	Eigen::IOFormat fmt(Eigen::StreamPrecision, 0, ", ", ";\n", "\t\t", "", "[", "]");
+	stream << "\tmoment_of_inertia_tensor:\n" << s.moment_of_inertia_tensor.format(fmt) << "\n";
+
+	Matrix3d relativeMoIT;
+	s.calcRelativeMomentOfInertiaTensor(relativeMoIT);
+	stream << "\trelative:\n" << relativeMoIT.format(fmt) << "\n";
 	return stream;
 }
 
+//calculate weight and correct mass and moment of inertia tensort from density and part weight
 void CalculationState::calcWeight(const Geometry &geom)
 {
 	//volume: mm^3,
@@ -98,7 +144,10 @@ private:
 
 
 //https://stackoverflow.com/questions/1406029/how-to-calculate-the-volume-of-a-3d-mesh-object-the-surface-of-which-is-made-up
-double SignedVolumeOfTriangle(const Vector3d &p1, const Vector3d &p2, const Vector3d &p3) {
+// calculate signed volume of tetrahedron
+// all triangles should have same direction
+double SignedVolumeOfTriangle(const Vector3d &p1, const Vector3d &p2, const Vector3d &p3)
+{
     auto v321 = p3[0]*p2[1]*p1[2];
     auto v231 = p2[0]*p3[1]*p1[2];
     auto v312 = p3[0]*p1[1]*p2[2];
@@ -111,24 +160,30 @@ double SignedVolumeOfTriangle(const Vector3d &p1, const Vector3d &p2, const Vect
 //https://github.com/mikedh/trimesh/blob/master/trimesh/triangles.py#L171
 //https://www.geometrictools.com/Documentation/PolyhedralMassProperties.pdf
 
+//rel_to_center_of_mass - get moment of inertia tensor relative to c.o.m
+//use parallel axis theorem
+//https://physics.stackexchange.com/questions/520755/translate-inertia-tensor-caculate-distance-matrix
+
 class PolyhedralFeaturesCalc
 {
 public:
 	PolyhedralFeaturesCalc(): volume(0.0), intg{0} {}
 	void processTriangle(const Polygon &triangle);
-	void finish(CalculationState &state);
+	void finish(CalculationState &state, bool rel_to_center_of_mass=false);
 	double getVolume() const { return this->volume; }
 private:
 	double volume;
 	double intg[10];// order: 1, x ,y ,z ,x^2 ,y^2 , z^2 ,xy ,yz ,zx
 };
 
+//structure to calcutate and store integral subexpressions
 struct subexpressions
 {
 	double f1 , f2 , f3 , g0 , g1 , g2;
 	void calc(double w0, double w1, double w2);
 };
 
+//calculate common integral subexpressions
 inline void subexpressions::calc(double w0, double w1, double w2)
 {
 	double temp0 = w0 + w1;
@@ -142,6 +197,7 @@ inline void subexpressions::calc(double w0, double w1, double w2)
 	g2 = f2 + w2 * (f1 + w2);
 }
 
+//calculate and integrate polynomial functions for tetrahedron
 void PolyhedralFeaturesCalc::processTriangle(const Polygon &triangle)
 {
 	assert(triangle.size() == 3); // algorithm only allows triangles
@@ -179,7 +235,9 @@ void PolyhedralFeaturesCalc::processTriangle(const Polygon &triangle)
 	intg[9] += d[2] * (p0[0]*sz.g0 + p1[0]*sz.g1 + p2[0]*sz.g2);
 }
 
-void PolyhedralFeaturesCalc::finish(CalculationState &state){
+//finish part calculation - convert intergrals to part features (mass(volume), center of mass, moment of inertia tensor)
+void PolyhedralFeaturesCalc::finish(CalculationState &state, bool rel_to_center_of_mass)
+{
 	const double koeffs[10] = { 1.0/6.0 ,1.0/24.0 ,1.0/24.0 ,1.0/24.0 ,1.0/60.0 ,1.0/60.0 ,1.0/60.0 ,1.0/120.0 ,1.0/120.0 ,1.0/120.0 };
 	for(int i=0; i<10; i++){
 		intg[i] *= koeffs[i];
@@ -194,12 +252,21 @@ void PolyhedralFeaturesCalc::finish(CalculationState &state){
 	state.center_of_mass[1] = cmy;
 	state.center_of_mass[2] = cmz;
 
-	double xx = intg[5] + intg[6] - mass*(cmy*cmy + cmz*cmz);
-	double yy = intg[4] + intg[6] - mass*(cmz*cmz + cmx*cmx);
-	double zz = intg[4] + intg[5] - mass*(cmx*cmx + cmy*cmy);
-	double xy = -(intg[7] - mass*cmx*cmy);
-	double yz = -(intg[8] - mass*cmy*cmz);
-	double xz = -(intg[9] - mass*cmz*cmx);
+	double xx = intg[5] + intg[6];
+	double yy = intg[4] + intg[6];
+	double zz = intg[4] + intg[5];
+	double xy = -intg[7];
+	double yz = -intg[8];
+	double xz = -intg[9];
+
+	if (rel_to_center_of_mass) {
+		xx -= mass*(cmy*cmy + cmz*cmz);
+		yy -= mass*(cmz*cmz + cmx*cmx);
+		zz -= mass*(cmx*cmx + cmy*cmy);
+		xy -= - mass*cmx*cmy;
+		yz -= - mass*cmy*cmz;
+		xz -= - mass*cmz*cmx;
+	}
 
 	state.moment_of_inertia_tensor <<
 		xx, xy, xz,
@@ -209,11 +276,15 @@ void PolyhedralFeaturesCalc::finish(CalculationState &state){
 	state.volume = volume;
 }
 
+//process PolySet part
 void PhysicsFeatureExporter::process(CalculationState &state, const PolySet &ps)
 {
 	PolySet triangulated(3);
+
+	//convert polyset to triangulated mesh
 	PolysetUtils::tessellate_faces(ps, triangulated);
 	
+	//calculate features
 	PolyhedralFeaturesCalc calc;
 	for (const auto &p : triangulated.polygons) {
 		calc.processTriangle(p);
@@ -221,6 +292,7 @@ void PhysicsFeatureExporter::process(CalculationState &state, const PolySet &ps)
 	calc.finish(state);
 }
 
+//process CGAL Nef Polyhedron part
 void PhysicsFeatureExporter::process(CalculationState &state, const CGAL_Nef_polyhedron &polyhedron)
 {
 	if (!polyhedron.p3->is_simple()) {
@@ -228,8 +300,10 @@ void PhysicsFeatureExporter::process(CalculationState &state, const CGAL_Nef_pol
 				"Exported object may not be a valid 2-manifold and may need repair");
 	}
 
+	//convert to PolySet
 	PolySet ps(3);
 	if (!CGALUtils::createPolySetFromNefPolyhedron3(*(polyhedron.p3), ps)) {
+		//calculate PolySet part
 		process(state, ps);
 	}
 	else {
@@ -237,11 +311,13 @@ void PhysicsFeatureExporter::process(CalculationState &state, const CGAL_Nef_pol
 	}
 }
 
+//dump geometry part and material data
 void PhysicsFeatureExporter::print(const CalculationState &state, const Geometry &geom, const std::string &className)
 {
 	output_ << className << " name:" << geom.getName() << " material:" << geom.getMaterialName() << " density:" << geom.getDensity() << " features:" << state << "\n";
 }
 
+//recursive function to calculate physics features of geometry tree
 void export_physics_inner(PhysicsFeatureExporter &exporter, CalculationState &parent_state, const shared_ptr<const Geometry> &geom, int current_indent)
 {
 	// for (int i = 0; i < current_indent; ++i) {
@@ -278,6 +354,7 @@ void export_physics_inner(PhysicsFeatureExporter &exporter, CalculationState &pa
 	}
 }
 
+// calculate physics features of Geometry and write them to output
 void export_physics(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	LOG(message_group::None, Location::NONE, "", "export_physics");
@@ -286,7 +363,9 @@ void export_physics(const shared_ptr<const Geometry> &geom, std::ostream &output
 	PhysicsFeatureExporter exporter(output);
 	CalculationState state;
 	export_physics_inner(exporter, state, geom, 0);
-	output << "total: " << state << "\n";
+	//Matrix3d relativeMoIT;
+	//state.calcRelativeMomentOfInertiaTensor(relativeMoIT);
+	output << "total: " << state;
 	setlocale(LC_NUMERIC, ""); // Set default locale
 }
 
